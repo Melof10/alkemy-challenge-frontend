@@ -1,6 +1,6 @@
-import Header from './admin/Header';
-import MenuDashboard from './admin/MenuDashboard';
-import Footer from './admin/Footer';
+import Header from './auth/template/Header';
+import MenuDashboard from './auth/template/MenuDashboard';
+import Footer from './auth/template/Footer';
 
 function Tournament() {
   return (

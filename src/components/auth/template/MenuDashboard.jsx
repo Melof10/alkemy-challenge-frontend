@@ -1,5 +1,8 @@
 import React, { useState, Fragment } from 'react';
 import { Link } from 'react-router-dom';
+import Home from '../Home';
+import Income from '../Income';
+import Expenses from '../Expenses';
 
 function MenuDashboard(){
 
@@ -20,19 +23,19 @@ function MenuDashboard(){
           <nav>
             <ul className="nav nav-sidebar sidebar-dark-primary flex-column" data-widget="treeview" role="menu" data-accordion="false">
               <li className="nav-item">
-                <Link onClick={() => setOption(1)} to="#" className={option === 1 ? "nav-link text-white active" : "nav-link text-white"}>
+                <Link onClick={() => setOption(1)} to="#" className={option === 1 ? "nav-link text-white font-weight-bold active" : "nav-link text-white"}>
                   <i class="fas fa-home nav-icon mr-1" />
                   <p>Home</p>
                 </Link>
               </li>
               <li className="nav-item">
-                <Link onClick={() => setOption(2)} to="#" className={option === 2 ? "nav-link text-white active" : "nav-link text-white"}>
+                <Link onClick={() => setOption(2)} to="#" className={option === 2 ? "nav-link text-white font-weight-bold active" : "nav-link text-white"}>
                   <i className="fas fa-arrow-down nav-icon mr-1" />
                   <p>Ingresos</p>
                 </Link>
               </li>
               <li className="nav-item">
-                <Link onClick={() => setOption(3)} to="#" className={option === 3 ? "nav-link text-white active" : "nav-link text-white"}>
+                <Link onClick={() => setOption(3)} to="#" className={option === 3 ? "nav-link text-white font-weight-bold active" : "nav-link text-white"}>
                   <i class="fas fa-arrow-up nav-icon mr-1" />
                   <p>Egresos</p>
                 </Link>
@@ -45,13 +48,13 @@ function MenuDashboard(){
         <section className="content">
           <div className="container d-flex justify-content-center pt-5">  
             {option === 1 &&
-              <h1>HOME</h1>
+              <Home />
             }
             {option === 2 &&
-              <h1>INGRESOS</h1>
+              <Income />
             }
             {option === 3 &&
-              <h1>EGRESOS</h1>
+              <Expenses />
             }
           </div>
         </section>    

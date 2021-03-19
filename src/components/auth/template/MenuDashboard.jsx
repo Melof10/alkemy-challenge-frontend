@@ -48,7 +48,7 @@ function MenuDashboard(){
         <section className="content">
           <div className="container d-flex justify-content-center pt-5">  
             {option === 1 &&
-              <Home />
+              <Home/>
             }
             {option === 2 &&
               <Income />

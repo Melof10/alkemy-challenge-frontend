@@ -17,7 +17,10 @@ function Home(){
         },
         { title: 'Monto ($)', field: 'amount' },    
         { title: 'Fecha', field: 'date' },
-        { title: 'Tipo', field: 'type.name'}
+        { 
+            title: 'Tipo', 
+            field: 'type.name'
+        }
     ];    
 
     const getTransactions = async() => {

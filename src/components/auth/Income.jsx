@@ -1,44 +1,65 @@
-import React, { useState, Fragment } from 'react';
+import React, { useState, useEffect, Fragment } from 'react';
 import MaterialTable from '@material-table/core';
-import { Button, Modal } from 'react-bootstrap';
+import axios from 'axios';
+import Swal from 'sweetalert2';
 
 function Income(){
-    const [showNew, setShowNew] = useState(false);
-    const [showUpdate, setShowUpdate] = useState(false);
+    const [data, setData] = useState([]);    
 
-    const handleCloseNew = () => setShowNew(false);
-    const handleShowNew = () => setShowNew(true); 
-    const handleCloseUpdate = () => setShowUpdate(false);
-    const handleShowUpdate = () => setShowUpdate(true); 
+    const Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+        didOpen: (toast) => {
+            toast.addEventListener('mouseenter', Swal.stopTimer)
+            toast.addEventListener('mouseleave', Swal.resumeTimer)
+        }
+    })            
 
     const columns = [
         { 
             title: 'Concepto',   
-            field: 'concepto',
+            field: 'concept',
             cellStyle: { textAlign: 'left', fontWeight: 'bold', width: '40%' }, 
             headerStyle: { textAlign: 'left' }            
         },
-        { title: 'Monto', field: 'monto'},    
-        { title: 'Fecha', field: 'fecha'}
+        { title: 'Monto ($)', field: 'amount'},    
+        { title: 'Fecha', field: 'date'}
     ];    
 
-    const data = [
-        {
-            "concepto": "ventas de autos",
-            "monto": "$500",
-            "fecha": "18/03/21"            
-        },
-        {
-            "concepto": "ventas de autos",
-            "monto": "$500",
-            "fecha": "18/03/21"            
-        },
-        {
-            "concepto": "ventas de autos",
-            "monto": "$500",
-            "fecha": "18/03/21"            
-        }
-    ]
+    const getTransactionsIncome = async() => {
+        await axios.get('http://localhost:3000/api/transaction/income/1')
+        .then(response => {
+            setData(response.data);
+            console.log(response.data);
+        }).catch(error => {
+            console.log(error);
+        })
+    }    
+
+    const deleteIncome = async(income) => {
+        axios.delete(`http://localhost:3000/api/transaction/delete/${income.id}`)
+        .then(response => {
+            console.log(response.data); 
+            getTransactionsIncome();
+            Toast.fire({
+                icon: 'success',
+                title: 'Registro eliminado'
+            })                    
+        }).catch(error => {
+            console.log(error);     
+            Toast.fire({
+                icon: 'error',
+                title: 'Error al eliminar registro'
+            })                                   
+        })        
+    }
+
+    useEffect(() => {
+        getTransactionsIncome();
+    }, []);
 
     return(
         <Fragment>
@@ -50,27 +71,36 @@ function Income(){
                         title={
                             <button 
                                 className="btn btn-sm btn-success font-weight-bold rounded-circle" 
-                                title="Nuevo Ingreso"
-                                onClick={handleShowNew}
+                                title="Nuevo Ingreso"   
+                                data-toggle="modal" 
+                                data-target="#modalNew"                                                          
                             >
                                 <i class="fas fa-plus"></i>                                
                             </button>
-                        }    
-                        actions={[
-                            {
-                                icon: 'edit',
-                                toolTip: 'Editar ingreso',
-                                onClick: () => handleShowUpdate()
-                            },
-                            {
-                                icon: 'delete',
-                                toolTip: 'Eliminar ingreso'
-                            }
-                        ]}               
+                        }                            
+                        editable={{                            
+                            onRowUpdate: (newData, oldData) =>
+                                new Promise((resolve, reject) => {
+                                    setTimeout(() => {
+                                        const dataUpdate = [...data];
+                                        const index = oldData.tableData.id;
+                                        dataUpdate[index] = newData;
+                                        setData([...dataUpdate]);                            
+                                        resolve();
+                                    }, 1000)
+                                }),
+                            onRowDelete: oldData =>
+                                new Promise((resolve, reject) => {
+                                    setTimeout(() => {
+                                        deleteIncome(oldData);
+                                        resolve();
+                                    }, 1000)
+                                })
+                        }}                           
                         options={{
                             headerStyle: {
                                 backgroundColor: '#fed136',
-                                color: '#FFF',
+                                color: '#000',
                                 textAlign: 'center',
                                 fontWeight: 'bold'
                             },
@@ -92,14 +122,21 @@ function Income(){
                                 nextTooltip: 'Pagina siguiente',
                                 previousAriaLabel: 'Pagina anterior',
                                 previousTooltip: 'Pagina anterior',
-                            },                            
+                            },                                                                                    
                             header: {
                                 actions: 'Acciones'
                             },
                             body: {
-                                emptyDataSourceMessage: 'No hay información',                                
+                                emptyDataSourceMessage: 'No hay información',
+                                editTooltip: 'Editar',
+                                deleteTooltip: 'Eliminar',
+                                editRow: {                                     
+                                    deleteText: '¿Seguro desea eliminar el registro?',
+                                    saveTooltip: 'Aceptar',
+                                    cancelTooltip: 'Cancelar' 
+                                }
                             },
-                            toolbar: {
+                            toolbar: {                                
                                 addRemoveColumns: 'Agregar o eliminar columnas',
                                 exportAriaLabel: 'Exportar',
                                 exportName: 'Exportar a CSV',
@@ -113,41 +150,54 @@ function Income(){
                         }}          
                     />
                 </div>   
+            </div> 
+
+            <div className="modal fade" id="modalNew" tabIndex={-1} role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div className="modal-dialog" role="document">
+                    <div className="modal-content">
+                        <div className="modal-header bg-success">
+                            <h5 className="modal-title" id="exampleModalLabel">Nuevo Ingreso</h5>
+                            <button type="button" className="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">×</span>
+                            </button>
+                        </div>
+                        <div className="modal-body">
+                            <form method="PUT">
+                                <div class="form-group">
+                                    <label for="concept">Concepto</label>
+                                    <input
+                                        type="text"
+                                        id="concept"
+                                        class="form-control"                                        
+                                    />
+                                </div>
+                                <div class="form-group">
+                                    <label for="amount">Monto ($)</label>
+                                    <input                                        
+                                        type="number" 
+                                        min="0" 
+                                        step=".01"
+                                        id="amount"
+                                        class="form-control"                                        
+                                    />
+                                </div>
+                                <div class="form-group">
+                                    <label for="date">Fecha</label>
+                                    <input
+                                        type="date"
+                                        id="date"
+                                        class="form-control"                                        
+                                    />
+                                </div>
+                                <button type="button" className="btn btn-primary">
+                                    <i class="fas fa-cloud-upload-alt mr-2"></i>
+                                    Guardar
+                                </button>
+                            </form>                            
+                        </div>                        
+                    </div>
+                </div>
             </div>
-
-            <Modal show={showUpdate} onHide={handleCloseUpdate}>
-                <Modal.Header closeButton>
-                    <Modal.Title>Modal Update</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    Woohoo, you're reading this text in a modal!
-                </Modal.Body>
-                <Modal.Footer>
-                    <Button variant="secondary" onClick={handleCloseUpdate}>
-                        Close
-                    </Button>
-                    <Button variant="primary">
-                        Save Changes
-                    </Button>
-                </Modal.Footer>
-            </Modal>    
-
-            <Modal show={showNew} onHide={handleCloseNew}>
-                <Modal.Header closeButton>
-                    <Modal.Title>Modal New</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    Woohoo, you're reading this text in a modal!
-                </Modal.Body>
-                <Modal.Footer>
-                    <Button variant="secondary" onClick={handleCloseNew}>
-                        Close
-                    </Button>
-                    <Button variant="primary">
-                        Save Changes
-                    </Button>
-                </Modal.Footer>
-            </Modal>    
 
         </Fragment>        
     )

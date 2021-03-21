@@ -2,7 +2,7 @@ import Header from './auth/template/Header';
 import MenuDashboard from './auth/template/MenuDashboard';
 import Footer from './auth/template/Footer';
 
-function Tournament() {
+function Main() {
   return (
     <div class="wrapper">
       <Header/>      
@@ -12,4 +12,4 @@ function Tournament() {
   );
 }
 
-export default Tournament;
+export default Main;

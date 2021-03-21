@@ -3,34 +3,48 @@ import MaterialTable from '@material-table/core';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 
-function Expenses(){   
-    const [data, setData] = useState([]);  
-    
-    const Toast = Swal.mixin({
-        toast: true,
-        position: 'top-end',
-        showConfirmButton: false,
-        timer: 3000,
-        timerProgressBar: true,
-        didOpen: (toast) => {
-            toast.addEventListener('mouseenter', Swal.stopTimer)
-            toast.addEventListener('mouseleave', Swal.resumeTimer)
-        }
-    })
+const BASE_URL = 'http://localhost:3000/api/transaction';
 
-    const columns = [
-        { 
-            title: 'Concepto', 
-            field: 'concept',                          
-            cellStyle: { textAlign: 'left', fontWeight: 'bold', width: '40%' }, 
-            headerStyle: { textAlign: 'left' }            
-        },
-        { title: 'Monto ($)', field: 'amount'},    
-        { title: 'Fecha', field: 'date'}
-    ];    
+const Toast = Swal.mixin({
+    toast: true,
+    position: 'top-end',
+    showConfirmButton: false,
+    timer: 3000,
+    timerProgressBar: true,
+    didOpen: (toast) => {
+        toast.addEventListener('mouseenter', Swal.stopTimer)
+        toast.addEventListener('mouseleave', Swal.resumeTimer)
+    }
+})
+
+const columns = [
+    { 
+        title: 'Concepto', 
+        field: 'concept',                          
+        cellStyle: { textAlign: 'left', fontWeight: 'bold', width: '40%' }, 
+        headerStyle: { textAlign: 'left' }            
+    },
+    { title: 'Monto ($)', field: 'amount'},    
+    { title: 'Fecha', field: 'date'}
+];
+
+function Expenses(){   
+    const [data, setData] = useState([]); 
+
+    const [transaction, setTransaction] = useState({
+        concept: null,
+        amount: null,
+        date: null,
+        userId: 1,
+        typeId: 2
+    });        
+
+    const [errorConcept, setErrorConcept] = useState();
+    const [errorAmount, setErrorAmount] = useState();
+    const [errorDate, setErrorDate] = useState();             
 
     const getTransactionsExpenses = async() => {
-        await axios.get('http://localhost:3000/api/transaction/expenses/1')
+        await axios.get(BASE_URL + '/expenses/1')
         .then(response => {
             setData(response.data);
             console.log(response.data);
@@ -40,7 +54,7 @@ function Expenses(){
     }    
 
     const deleteIncome = async(income) => {
-        axios.delete(`http://localhost:3000/api/transaction/delete/${income.id}`)
+        axios.delete(BASE_URL + `/delete/${income.id}`)
         .then(response => {
             console.log(response.data); 
             getTransactionsExpenses();
@@ -57,6 +71,63 @@ function Expenses(){
         })        
     }
 
+    const handleChange = (e) => {
+        setTransaction({
+            ...transaction,
+            [e.target.name]: e.target.value
+        })
+    }
+
+    const handleSubmit = async(e) => {
+        e.preventDefault(); 
+        
+        setErrorConcept();
+        setErrorAmount();
+        setErrorDate();        
+
+        await axios.post(BASE_URL, transaction)
+        .then(response => {
+            setTransaction({
+                concept: null,
+                amount: null,
+                date: null,
+                userId: 1,
+                typeId: 1
+            })        
+            getTransactionsExpenses();            
+            clearTransaction();
+            Toast.fire({
+                icon: 'success',
+                title: 'Registro guardado'
+            })                          
+            console.log(response.data);
+        }).catch(error => {                       
+            let errorsBack = error.response.data.errors;    
+            for(let i = 0; i < errorsBack.length; i++){                
+                if(errorsBack[i].path === "concept"){                    
+                    setErrorConcept(errorsBack[i].message);                                    
+                }
+                if(errorsBack[i].path === "amount"){
+                    setErrorAmount(errorsBack[i].message);                    
+                }
+                if(errorsBack[i].path === "date"){
+                    setErrorDate(errorsBack[i].message);                    
+                }
+            }
+            console.log(errorsBack);
+        })
+    }
+
+    const clearTransaction = () => {
+        let inputConcept = document.getElementById("concept");    
+        let inputAmount = document.getElementById("amount");
+        let inputDate = document.getElementById("date");
+
+        inputConcept.value = '';
+        inputAmount.value = '';
+        inputDate.value = '';        
+    }
+
     useEffect(() => {
         getTransactionsExpenses();
     }, []);
@@ -64,7 +135,56 @@ function Expenses(){
     return(
         <Fragment>
             <div className="col-md-10">                                    
-                <div className="mb-4">
+                <div className="my-4">
+                    <form className="mb-2" onSubmit={handleSubmit}>
+                        <div className="form-row">
+                            <div className="col-md-3">
+                                <input
+                                    type="text"
+                                    id="concept"
+                                    class={errorConcept ? "form-control is-invalid" : "form-control"}
+                                    placeholder="Concepto"
+                                    name="concept"                                       
+                                    onChange={handleChange}
+                                />                                                                
+                                <div className={errorConcept ? "invalid-feedback" : "d-none"}>
+                                    {errorConcept}
+                                </div>
+                            </div>
+                            <div className="col-md-3">
+                                <input
+                                    type="text"                                     
+                                    id="amount"
+                                    class={errorAmount ? "form-control is-invalid" : "form-control"}
+                                    placeholder="Monto ($)"
+                                    name="amount"
+                                    onChange={handleChange}
+                                />
+                                <div className={errorAmount ? "invalid-feedback" : "d-none"}>
+                                    {errorAmount}
+                                </div>
+                            </div>
+                            <div className="col-md-3">
+                                <input
+                                    type="date"
+                                    id="date"
+                                    class={errorDate ? "form-control is-invalid" : "form-control"}
+                                    placeholder="Fecha"
+                                    name="date"                                       
+                                    onChange={handleChange}
+                                />
+                                <div className={errorDate ? "invalid-feedback" : "d-none"}>
+                                    {errorDate}
+                                </div>
+                            </div>
+                            <div className="col-md-3">
+                                <button type="submit" className="btn btn-success col-12">
+                                    <i class="fas fa-cloud-upload-alt mr-2"></i>
+                                    Guardar
+                                </button>
+                            </div>
+                        </div>
+                    </form>
                     <MaterialTable                                
                         columns = {columns}     
                         data = {data}  
@@ -87,16 +207,7 @@ function Expenses(){
                                     }, 1000)
                                 })
                         }}                                 
-                        title={
-                            <button 
-                                className="btn btn-sm btn-success font-weight-bold rounded-circle" 
-                                title="Nuevo Egreso"   
-                                data-toggle="modal" 
-                                data-target="#modalNew"                             
-                            >
-                                <i class="fas fa-plus"></i>                                
-                            </button>
-                        }           
+                        title="EGRESOS"      
                         options={{
                             headerStyle: {
                                 backgroundColor: '#fed136',
@@ -152,7 +263,7 @@ function Expenses(){
                 </div>   
             </div>    
 
-            <div className="modal fade" id="modalNew" tabIndex={-1} role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            {/*<div className="modal fade" id="modalNew" tabIndex={-1} role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
                 <div className="modal-dialog" role="document">
                     <div className="modal-content">
                         <div className="modal-header bg-success">
@@ -197,7 +308,7 @@ function Expenses(){
                         </div>                        
                     </div>
                 </div>
-            </div>
+            </div>*/}
             
         </Fragment>
     )

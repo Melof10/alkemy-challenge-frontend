@@ -58,7 +58,7 @@ function Home(){
 
     return(
         <Fragment>
-            <div className="col-md-10">            
+            <div className="col-md-10 pt-5">            
                 <div class="row">
                     <div class="col-lg-4 col-12">                        
                         <div class="small-box-footer">

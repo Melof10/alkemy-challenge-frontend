@@ -1,7 +1,81 @@
-import React, { Fragment } from 'react';
+import React, { useState, Fragment } from 'react';
+import axios from 'axios';
+import { Redirect } from 'react-router-dom';
+import { getAccessTokenApi } from '../../utils/auth';
+import { ACCESS_TOKEN, REFRESH_TOKEN } from '../../utils/constants';
 import './styles/auth.css';
 
-function Login(){
+function Login(){    
+
+    const [user, setUser] = useState({
+        email: null,
+        password: null,
+        repeatPassword: null
+    })
+
+    const [errorEmail, setErrorEmail] = useState();
+    const [errorPassword, setErrorPassword] = useState();
+    const [errorRepeatPassword, setErrorRepeatPassword] = useState();    
+
+    const handleSubmit = async(e) => {
+        e.preventDefault();
+
+        setErrorEmail();
+        setErrorPassword();
+        setErrorRepeatPassword();
+
+        await axios.post('http://localhost:3000/api/users/signup', user)
+        .then(response => {
+            console.log(response.data);                        
+            clearUser();
+            setUser({
+                email: null,
+                password: null,
+                repeatPassword: null
+            });                
+            const { accessToken, refreshToken } = response.data;            
+            localStorage.setItem(ACCESS_TOKEN, accessToken);
+            localStorage.setItem(REFRESH_TOKEN, refreshToken);
+
+            window.location.href = '/home';            
+        }).catch(error => {
+            console.log(error.response.data.errors);            
+            let errorsBack = error.response.data.errors;
+            for(let i = 0; i < errorsBack.length; i++){
+                if(errorsBack[i].path === "email"){                    
+                    setErrorEmail(errorsBack[i].message);                                    
+                }
+                if(errorsBack[i].path === "password"){
+                    setErrorPassword(errorsBack[i].message);                    
+                }
+                if(errorsBack[i].path === "repeatPassword"){
+                    setErrorRepeatPassword(errorsBack[i].message);                    
+                }
+            }
+        })
+    }
+
+    const handleChange = (e) => {
+        setUser({
+            ...user,
+            [e.target.name]: e.target.value
+        })        
+    }   
+
+    const clearUser = () => {
+        const inputEmail = document.getElementById('email');
+        const inputPassword = document.getElementById('password');
+        const inputRepeatPassword = document.getElementById('repeatPassword');
+
+        inputEmail.value = '';
+        inputPassword.value = '';
+        inputRepeatPassword.value = '';
+    }
+
+    if (getAccessTokenApi()) {
+        return <Redirect to="/home" />
+    }
+
     return(
         <Fragment>                                            
             <main className="my-form">
@@ -11,20 +85,50 @@ function Login(){
                             <div className="card py-3"> 
                                 <h5 className="text-center font-weight-bold pt-3">ALKEMY CHALLENGE</h5>                               
                                 <div className="card-body">
-                                    <form name="my-form" onsubmit="return validform()" action="success.php" method>
+                                    <form onSubmit={handleSubmit}>
                                         <div className="form-group row">                  
                                             <div className="col-md-12">
-                                                <input type="text" id="full_name" className="form-control" name="full-name" placeholder="Correo electrónico"/>
+                                                <input 
+                                                    type="email" 
+                                                    id="email" 
+                                                    className={errorEmail ? "form-control is-invalid" : "form-control"} 
+                                                    name="email"                                                     
+                                                    onChange={handleChange}
+                                                    placeholder="Correo electrónico"
+                                                />
+                                                <div className={errorEmail ? "invalid-feedback" : "d-none"}>
+                                                    {errorEmail}
+                                                </div>
                                             </div>
                                         </div>
                                         <div className="form-group row">                  
                                             <div className="col-md-12">
-                                                <input type="text" id="email_address" className="form-control" name="email-address" placeholder="Contraseña"/>
+                                                <input 
+                                                    type="password" 
+                                                    id="password" 
+                                                    className={errorPassword ? "form-control is-invalid" : "form-control"} 
+                                                    name="password"                                                                                                         
+                                                    onChange={handleChange}
+                                                    placeholder="Contraseña"
+                                                />
+                                                <div className={errorPassword ? "invalid-feedback" : "d-none"}>
+                                                    {errorPassword}
+                                                </div>
                                             </div>
                                         </div>                                  
                                         <div className="form-group row">                  
                                             <div className="col-md-12">
-                                                <input type="text" id="email_address" className="form-control" name="email-address" placeholder="Repetir Contraseña"/>
+                                                <input 
+                                                    type="password" 
+                                                    id="repeatPassword" 
+                                                    className={errorRepeatPassword ? "form-control is-invalid" : "form-control"}  
+                                                    name="repeatPassword"                                                     
+                                                    onChange={handleChange}
+                                                    placeholder="Repetir Contraseña"
+                                                />
+                                                <div className={errorRepeatPassword ? "invalid-feedback" : "d-none"}>
+                                                    {errorRepeatPassword}
+                                                </div>
                                             </div>
                                         </div>                                  
                                         <div className="col-md-12">

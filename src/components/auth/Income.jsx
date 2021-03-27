@@ -2,6 +2,7 @@ import React, { useState, useEffect, Fragment } from 'react';
 import MaterialTable from '@material-table/core';
 import axios from 'axios';
 import Swal from 'sweetalert2';
+import moment from 'moment';
 
 const BASE_URL = 'http://localhost:3000/api/transaction';
 
@@ -24,8 +25,15 @@ const columns = [
         cellStyle: { textAlign: 'left', fontWeight: 'bold', width: '40%' }, 
         headerStyle: { textAlign: 'left' }            
     },
-    { title: 'Monto ($)', field: 'amount'},    
-    { title: 'Fecha', field: 'date'}
+    { 
+        title: 'Monto ($)', 
+        field: 'amount'
+    },    
+    { 
+        title: 'Fecha', 
+        field: 'date',         
+        render: rowData => moment.utc(rowData.date).format('DD/MM/YYYY')
+    }
 ];    
 
 function Income(){
@@ -118,6 +126,21 @@ function Income(){
         })
     }
 
+    const updateTransaction = async(transactionUpdate) => {          
+        await axios.put(BASE_URL + `/update/${transactionUpdate.id}`, transactionUpdate)
+        .then(response => {                        
+            getTransactionsIncome();            
+            clearTransaction();
+            Toast.fire({
+                icon: 'success',
+                title: 'Registro actualizado'
+            })                          
+            console.log(response.data);
+        }).catch(error => {            
+            console.log(error.response.data.errors);                
+        })
+    }
+
     const clearTransaction = () => {
         let inputConcept = document.getElementById("concept");    
         let inputAmount = document.getElementById("amount");
@@ -145,7 +168,7 @@ function Income(){
                                     class={errorConcept ? "form-control is-invalid" : "form-control"}
                                     placeholder="Concepto"
                                     name="concept"                                       
-                                    onChange={handleChange}
+                                    onBlur={handleChange}
                                 />                                                                
                                 <div className={errorConcept ? "invalid-feedback" : "d-none"}>
                                     {errorConcept}
@@ -158,7 +181,7 @@ function Income(){
                                     class={errorAmount ? "form-control is-invalid" : "form-control"}
                                     placeholder="Monto ($)"
                                     name="amount"
-                                    onChange={handleChange}
+                                    onBlur={handleChange}
                                 />
                                 <div className={errorAmount ? "invalid-feedback" : "d-none"}>
                                     {errorAmount}
@@ -171,7 +194,7 @@ function Income(){
                                     class={errorDate ? "form-control is-invalid" : "form-control"}
                                     placeholder="Fecha"
                                     name="date"                                       
-                                    onChange={handleChange}
+                                    onBlur={handleChange}
                                 />
                                 <div className={errorDate ? "invalid-feedback" : "d-none"}>
                                     {errorDate}
@@ -189,14 +212,11 @@ function Income(){
                         columns = {columns}
                         data = {data}                                
                         title="INGRESOS"
-                        editable={{                            
+                        editable={{                                                        
                             onRowUpdate: (newData, oldData) =>
                                 new Promise((resolve, reject) => {
-                                    setTimeout(() => {
-                                        const dataUpdate = [...data];
-                                        const index = oldData.tableData.id;
-                                        dataUpdate[index] = newData;
-                                        setData([...dataUpdate]);                            
+                                    setTimeout(() => {                                                                                
+                                        updateTransaction(newData);
                                         resolve();
                                     }, 1000)
                                 }),

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, Fragment } from 'react';
 import MaterialTable from '@material-table/core';
 import axios from 'axios';
+import moment from 'moment';
 
 function Home(){
 
@@ -15,11 +16,19 @@ function Home(){
             cellStyle: { textAlign: 'left', fontWeight: 'bold', width: '40%' }, 
             headerStyle: { textAlign: 'left' }            
         },
-        { title: 'Monto ($)', field: 'amount' },    
-        { title: 'Fecha', field: 'date' },
+        { 
+            title: 'Monto ($)', 
+            field: 'amount' 
+        },    
+        { 
+            title: 'Fecha', 
+            field: 'date',
+            type: 'date',
+            render: rowData => moment.utc(rowData.date).format('DD/MM/YYYY')
+        },
         { 
             title: 'Tipo', 
-            field: 'type.name'
+            field: 'type.name',            
         }
     ];    
 
@@ -54,7 +63,7 @@ function Home(){
         getTransactions(); 
         getSumIncome();
         getSumExpenses();              
-    }, [])
+    }, [])    
 
     return(
         <Fragment>

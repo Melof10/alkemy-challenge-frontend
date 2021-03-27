@@ -1,6 +1,17 @@
-import React from 'react';
+import React  from 'react';
+import { logout } from '../../../utils/auth';
+import useAuth from '../../../hooks/useAuth';
+import { Link } from 'react-router-dom';
 
 function Header(){    
+
+  const { user } = useAuth();
+
+  const logoutUser = () => {
+    logout();
+    window.location.reload();
+  }
+
   return (
     <div>
       <nav className="main-header navbar navbar-expand navbar-white navbar-light">        
@@ -12,7 +23,7 @@ function Header(){
         <ul className="navbar-nav ml-auto">                    
           <li className="nav-item my-0 py-0 dropdown">
             <a className="nav-link dropdown-toggle font-weight-bold" href="/" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">                        
-              95fedemelo@gmail.com
+              {user.email}
             </a>
             <div className="dropdown-menu dropdown-menu-right text-left">
               <a href="/" className="dropdown-item">
@@ -20,10 +31,10 @@ function Header(){
                 Perfil
               </a>                            
               <div className="dropdown-divider"></div>
-              <a href="/logout" className="dropdown-item text-danger">
+              <Link onClick={logoutUser} to="#" className="dropdown-item text-danger">
                 <i className="fas fa-power-off mr-2"></i>
                 Cerrar Sesión
-              </a>                        
+              </Link>                        
             </div>
           </li>
         </ul>        

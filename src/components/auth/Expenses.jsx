@@ -100,7 +100,7 @@ function Expenses(){
                 amount: null,
                 date: null,
                 userId: user.id,
-                typeId: 1
+                typeId: 2
             })        
             getTransactionsExpenses();            
             clearTransaction();

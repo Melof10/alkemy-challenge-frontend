@@ -1,4 +1,4 @@
-const BASE_URL = 'https://alkemy-challenge-backend.herokuapp.com/api';
+const BASE_URL = 'http://localhost:3000/api';
 
 export const ACCESS_TOKEN = 'accessToken';
 export const REFRESH_TOKEN = 'refreshToken';

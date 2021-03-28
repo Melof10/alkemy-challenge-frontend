@@ -2,6 +2,7 @@ import React  from 'react';
 import { logout } from '../../../utils/auth';
 import useAuth from '../../../hooks/useAuth';
 import { Link } from 'react-router-dom';
+import challengePDF from '../../../assets/pdf/alkemy-challenge-js.pdf';
 
 function Header(){    
 
@@ -26,9 +27,9 @@ function Header(){
               {user.email}
             </a>
             <div className="dropdown-menu dropdown-menu-right text-left">
-              <a href="/" className="dropdown-item">
-                <i className="fas fa-user mr-2"></i>
-                Perfil
+              <a href={challengePDF} target="_blank" className="dropdown-item">
+              <i className="far fa-file-pdf mr-2"></i>
+                Challenge PDF
               </a>                            
               <div className="dropdown-divider"></div>
               <Link onClick={logoutUser} to="#" className="dropdown-item text-danger">

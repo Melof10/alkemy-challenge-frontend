@@ -3,6 +3,8 @@ import axios from 'axios';
 import { Redirect } from 'react-router-dom';
 import { getAccessTokenApi } from '../../utils/auth';
 import { ACCESS_TOKEN, REFRESH_TOKEN } from '../../utils/constants';
+import { useForm } from 'react-hook-form';
+import { URL_USERS } from '../../utils/constants';
 import './styles/auth.css';
 
 function Login(){    
@@ -11,48 +13,49 @@ function Login(){
         email: null,
         password: null,
         repeatPassword: null
-    })
+    })    
 
-    const [errorEmail, setErrorEmail] = useState();
-    const [errorPassword, setErrorPassword] = useState();
-    const [errorRepeatPassword, setErrorRepeatPassword] = useState();    
+    const { register, errors, setError, handleSubmit, watch } = useForm();    
 
-    const handleSubmit = async(e) => {
+
+    const onSubmit = async(data, e) => {
         e.preventDefault();
+        e.target.reset();
 
-        setErrorEmail();
-        setErrorPassword();
-        setErrorRepeatPassword();
+        if(data){
+            await axios.post(URL_USERS + '/signup', user)
+            .then(response => {
+                console.log(response.data);                        
+                clearUser();
+                setUser({
+                    email: null,
+                    password: null,
+                    repeatPassword: null
+                });                
+                const { accessToken, refreshToken } = response.data;            
+                localStorage.setItem(ACCESS_TOKEN, accessToken);
+                localStorage.setItem(REFRESH_TOKEN, refreshToken);
 
-        await axios.post('http://localhost:3000/api/users/signup', user)
-        .then(response => {
-            console.log(response.data);                        
-            clearUser();
-            setUser({
-                email: null,
-                password: null,
-                repeatPassword: null
-            });                
-            const { accessToken, refreshToken } = response.data;            
-            localStorage.setItem(ACCESS_TOKEN, accessToken);
-            localStorage.setItem(REFRESH_TOKEN, refreshToken);
-
-            window.location.href = '/home';            
-        }).catch(error => {
-            console.log(error.response.data.errors);            
-            let errorsBack = error.response.data.errors;
-            for(let i = 0; i < errorsBack.length; i++){
-                if(errorsBack[i].path === "email"){                    
-                    setErrorEmail(errorsBack[i].message);                                    
-                }
-                if(errorsBack[i].path === "password"){
-                    setErrorPassword(errorsBack[i].message);                    
-                }
-                if(errorsBack[i].path === "repeatPassword"){
-                    setErrorRepeatPassword(errorsBack[i].message);                    
-                }
-            }
-        })
+                window.location.href = '/home';            
+            }).catch(error => {
+                let errorsBack = error.response.data.message;
+                console.log(errorsBack)
+                for(let i = 0; i < errorsBack.length; i++){
+                    if(errorsBack[i].path === "email"){                    
+                        setError('email', {
+                            type: 'manual',
+                            message: errorsBack[i].message
+                        });
+                    }
+                    if(errorsBack[i].path === "password"){
+                        setError('password', {
+                            type: 'manual',
+                            message: errorsBack[i].message
+                        });
+                    }
+                }                
+            })
+        }        
     }
 
     const handleChange = (e) => {
@@ -83,22 +86,32 @@ function Login(){
                     <div className="row justify-content-center align-items-center minh-100">
                         <div className="col-11 col-sm-8 col-md-6 col-lg-4">
                             <div className="card py-3"> 
-                                <h5 className="text-center font-weight-bold pt-3">ALKEMY CHALLENGE</h5>                               
+                                <h5 className="text-center font-weight-bold pt-3">REGISTRARSE</h5>                               
                                 <div className="card-body">
-                                    <form onSubmit={handleSubmit}>
+                                    <form onSubmit={handleSubmit(onSubmit)}>
                                         <div className="form-group row">                  
                                             <div className="col-md-12">
                                                 <input 
                                                     type="email" 
                                                     id="email" 
-                                                    className={errorEmail ? "form-control is-invalid" : "form-control"} 
+                                                    className={errors?.email?.message ? "form-control is-invalid" : "form-control"}
                                                     name="email"                                                     
                                                     onChange={handleChange}
                                                     placeholder="Correo electrónico"
-                                                />
-                                                <div className={errorEmail ? "invalid-feedback" : "d-none"}>
-                                                    {errorEmail}
-                                                </div>
+                                                    ref={register({
+                                                        required: {
+                                                            value: true, 
+                                                            message: 'El correo es requerido'
+                                                        },
+                                                        minLength: {
+                                                            value: 4, 
+                                                            message: 'Mínimo 2 carácteres'
+                                                        }
+                                                    })}
+                                                />  
+                                                <div className={errors?.email?.message ? "invalid-feedback" : "d-none"}>
+                                                    {errors?.email?.message}
+                                                </div>                                                                                 
                                             </div>
                                         </div>
                                         <div className="form-group row">                  
@@ -106,14 +119,24 @@ function Login(){
                                                 <input 
                                                     type="password" 
                                                     id="password" 
-                                                    className={errorPassword ? "form-control is-invalid" : "form-control"} 
+                                                    className={errors?.password?.message ? "form-control is-invalid" : "form-control"} 
                                                     name="password"                                                                                                         
                                                     onChange={handleChange}
                                                     placeholder="Contraseña"
-                                                />
-                                                <div className={errorPassword ? "invalid-feedback" : "d-none"}>
-                                                    {errorPassword}
-                                                </div>
+                                                    ref={register({
+                                                        required: {
+                                                            value: true, 
+                                                            message: 'La contraseña es requerida'
+                                                        },
+                                                        minLength: {
+                                                            value: 2, 
+                                                            message: 'Mínimo 4 carácteres'
+                                                        }
+                                                    })}
+                                                />    
+                                                <div className={errors?.password?.message ? "invalid-feedback" : "d-none"}>
+                                                    {errors?.password?.message}
+                                                </div>                                            
                                             </div>
                                         </div>                                  
                                         <div className="form-group row">                  
@@ -121,14 +144,25 @@ function Login(){
                                                 <input 
                                                     type="password" 
                                                     id="repeatPassword" 
-                                                    className={errorRepeatPassword ? "form-control is-invalid" : "form-control"}  
+                                                    className={errors?.repeatPassword?.message ? "form-control is-invalid" : "form-control"} 
                                                     name="repeatPassword"                                                     
                                                     onChange={handleChange}
                                                     placeholder="Repetir Contraseña"
-                                                />
-                                                <div className={errorRepeatPassword ? "invalid-feedback" : "d-none"}>
-                                                    {errorRepeatPassword}
-                                                </div>
+                                                    ref={register({     
+                                                        required: {
+                                                            value: true, 
+                                                            message: 'Repetir la contraseña es requerido'
+                                                        },
+                                                        minLength: {
+                                                            value: 2, 
+                                                            message: 'Mínimo 4 carácteres'
+                                                        },                                                   
+                                                        validate: (value) => value === watch('password') || "Las contraseñas deben coincidir"
+                                                    })}
+                                                />      
+                                                <div className={errors?.repeatPassword?.message ? "invalid-feedback" : "d-none"}>
+                                                    {errors?.repeatPassword?.message}
+                                                </div>                                          
                                             </div>
                                         </div>                                  
                                         <div className="col-md-12">

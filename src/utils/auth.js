@@ -2,6 +2,7 @@ import { ACCESS_TOKEN, REFRESH_TOKEN } from './constants';
 import jwtDecode from 'jwt-decode';
 import moment from 'moment';
 import axios from 'axios';
+import { URL_AUTH } from './constants';
 
 export function getAccessTokenApi(){
     const accessToken = localStorage.getItem(ACCESS_TOKEN);
@@ -24,7 +25,7 @@ export function getRefreshTokenApi(){
 }
 
 export const refreshAccessToken = async(refreshToken) => {
-    await axios.post('http://localhost:3000/api/auth/refresh-access-token', refreshToken)
+    await axios.post(URL_AUTH + '/refresh-access-token', refreshToken)
     .then(response => {
         console.log(response.data);        
     }).catch(error => {

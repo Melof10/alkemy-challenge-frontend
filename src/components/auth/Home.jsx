@@ -2,6 +2,31 @@ import React, { useState, useEffect, Fragment } from 'react';
 import MaterialTable from '@material-table/core';
 import axios from 'axios';
 import moment from 'moment';
+import useAuth from '../../hooks/useAuth';
+import { URL_TRANSACTION } from '../../utils/constants';
+
+const columns = [
+    { 
+        title: 'Concepto',
+        field: 'concept',
+        cellStyle: { textAlign: 'left', fontWeight: 'bold', width: '40%' }, 
+        headerStyle: { textAlign: 'left' }            
+    },
+    { 
+        title: 'Monto ($)', 
+        field: 'amount' 
+    },    
+    { 
+        title: 'Fecha', 
+        field: 'date',
+        type: 'date',
+        render: rowData => moment.utc(rowData.date).format('DD/MM/YYYY')
+    },
+    { 
+        title: 'Tipo', 
+        field: 'type.name',            
+    }
+];
 
 function Home(){
 
@@ -9,31 +34,10 @@ function Home(){
     const [income, setIncome] = useState(0);
     const [expenses, setExpenses] = useState(0);
 
-    const columns = [
-        { 
-            title: 'Concepto',
-            field: 'concept',
-            cellStyle: { textAlign: 'left', fontWeight: 'bold', width: '40%' }, 
-            headerStyle: { textAlign: 'left' }            
-        },
-        { 
-            title: 'Monto ($)', 
-            field: 'amount' 
-        },    
-        { 
-            title: 'Fecha', 
-            field: 'date',
-            type: 'date',
-            render: rowData => moment.utc(rowData.date).format('DD/MM/YYYY')
-        },
-        { 
-            title: 'Tipo', 
-            field: 'type.name',            
-        }
-    ];    
+    const { user } = useAuth();        
 
     const getTransactions = async() => {
-        await axios.get('http://localhost:3000/api/transaction/all/last/1')
+        await axios.get(URL_TRANSACTION + `/all/last/${user.id}`)
         .then(response => {
             setData(response.data);             
         }).catch(error => {
@@ -42,7 +46,7 @@ function Home(){
     }
 
     const getSumIncome = async() => {
-        await axios.get('http://localhost:3000/api/transaction/income/sum/1')
+        await axios.get(URL_TRANSACTION + `/income/sum/${user.id}`)
         .then(response => {            
             response.data[0].total_amount ? setIncome(response.data[0].total_amount) : setIncome(0);
         }).catch(error => {                 
@@ -51,7 +55,7 @@ function Home(){
     }
 
     const getSumExpenses = async() => {
-        await axios.get('http://localhost:3000/api/transaction/expenses/sum/1')
+        await axios.get(URL_TRANSACTION + `/expenses/sum/${user.id}`)
         .then(response => {
             response.data[0].total_amount ? setExpenses(response.data[0].total_amount) : setExpenses(0);
         }).catch(error => {            

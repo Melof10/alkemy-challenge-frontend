@@ -3,8 +3,8 @@ import MaterialTable from '@material-table/core';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import moment from 'moment';
-
-const BASE_URL = 'http://localhost:3000/api/transaction';
+import useAuth from '../../hooks/useAuth';
+import { URL_TRANSACTION } from '../../utils/constants';
 
 const Toast = Swal.mixin({
     toast: true,
@@ -37,13 +37,15 @@ const columns = [
 ];    
 
 function Income(){
-    const [data, setData] = useState([]);    
-
+    const [data, setData] = useState([]);   
+    
+    const { user } = useAuth();
+    
     const [transaction, setTransaction] = useState({
         concept: null,
         amount: null,
         date: null,
-        userId: 1,
+        userId: user.id,
         typeId: 1
     });        
 
@@ -52,19 +54,17 @@ function Income(){
     const [errorDate, setErrorDate] = useState();    
 
     const getTransactionsIncome = async() => {
-        await axios.get(BASE_URL + '/income/1')
+        await axios.get(URL_TRANSACTION + `/income/${user.id}`)
         .then(response => {
-            setData(response.data);
-            console.log(response.data);
+            setData(response.data);            
         }).catch(error => {
             console.log(error);
         })
     }    
 
     const deleteIncome = async(income) => {
-        axios.delete(BASE_URL + `/delete/${income.id}`)
-        .then(response => {
-            console.log(response.data); 
+        axios.delete(URL_TRANSACTION + `/delete/${income.id}`)
+        .then(response => {            
             getTransactionsIncome();
             Toast.fire({
                 icon: 'success',
@@ -93,13 +93,13 @@ function Income(){
         setErrorAmount();
         setErrorDate();        
 
-        await axios.post(BASE_URL, transaction)
+        await axios.post(URL_TRANSACTION, transaction)
         .then(response => {
             setTransaction({
                 concept: null,
                 amount: null,
                 date: null,
-                userId: 1,
+                userId: user.id,
                 typeId: 1
             })        
             getTransactionsIncome();            
@@ -107,8 +107,7 @@ function Income(){
             Toast.fire({
                 icon: 'success',
                 title: 'Registro guardado'
-            })                          
-            console.log(response.data);
+            })                                      
         }).catch(error => {                       
             let errorsBack = error.response.data.errors;    
             for(let i = 0; i < errorsBack.length; i++){                
@@ -121,21 +120,19 @@ function Income(){
                 if(errorsBack[i].path === "date"){
                     setErrorDate(errorsBack[i].message);                    
                 }
-            }
-            console.log(errorsBack);
+            }            
         })
     }
 
     const updateTransaction = async(transactionUpdate) => {          
-        await axios.put(BASE_URL + `/update/${transactionUpdate.id}`, transactionUpdate)
+        await axios.put(URL_TRANSACTION + `/update/${transactionUpdate.id}`, transactionUpdate)
         .then(response => {                        
             getTransactionsIncome();            
             clearTransaction();
             Toast.fire({
                 icon: 'success',
                 title: 'Registro actualizado'
-            })                          
-            console.log(response.data);
+            })                                      
         }).catch(error => {            
             console.log(error.response.data.errors);                
         })
@@ -202,7 +199,7 @@ function Income(){
                             </div>
                             <div className="col-md-3">
                                 <button type="submit" className="btn btn-success col-12">
-                                    <i class="fas fa-cloud-upload-alt mr-2"></i>
+                                    <i className="fas fa-cloud-upload-alt mr-2"></i>
                                     Guardar
                                 </button>
                             </div>

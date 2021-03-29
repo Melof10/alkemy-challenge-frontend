@@ -27,7 +27,7 @@ function Header(){
               {user.email}
             </a>
             <div className="dropdown-menu dropdown-menu-right text-left">
-              <a href={challengePDF} target="_blank" className="dropdown-item">
+              <a href={challengePDF} rel="noreferrer" className="dropdown-item">
               <i className="far fa-file-pdf mr-2"></i>
                 Challenge PDF
               </a>                            

@@ -149,8 +149,17 @@ function Expenses(){
     }
 
     useEffect(() => {
+        const getTransactionsExpenses = async() => {
+            await axios.get(URL_TRANSACTION + `/expenses/${user.id}`)
+            .then(response => {
+                setData(response.data);            
+            }).catch(error => {
+                console.log(error);
+            })
+        }
+
         getTransactionsExpenses();
-    }, []);
+    }, [user.id]);
 
     return(
         <Fragment>

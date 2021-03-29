@@ -51,8 +51,8 @@ function Income(){
 
     const [errorConcept, setErrorConcept] = useState();
     const [errorAmount, setErrorAmount] = useState();
-    const [errorDate, setErrorDate] = useState();    
-
+    const [errorDate, setErrorDate] = useState(); 
+    
     const getTransactionsIncome = async() => {
         await axios.get(URL_TRANSACTION + `/income/${user.id}`)
         .then(response => {
@@ -60,7 +60,7 @@ function Income(){
         }).catch(error => {
             console.log(error);
         })
-    }    
+    }
 
     const deleteIncome = async(income) => {
         axios.delete(URL_TRANSACTION + `/delete/${income.id}`)
@@ -149,8 +149,17 @@ function Income(){
     }
 
     useEffect(() => {
+        const getTransactionsIncome = async() => {
+            await axios.get(URL_TRANSACTION + `/income/${user.id}`)
+            .then(response => {
+                setData(response.data);            
+            }).catch(error => {
+                console.log(error);
+            })
+        }
+
         getTransactionsIncome();
-    }, []);
+    }, [user.id]);
 
     return(
         <Fragment>

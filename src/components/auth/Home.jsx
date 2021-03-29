@@ -36,38 +36,38 @@ function Home(){
 
     const { user } = useAuth();        
 
-    const getTransactions = async() => {
-        await axios.get(URL_TRANSACTION + `/all/last/${user.id}`)
-        .then(response => {
-            setData(response.data);             
-        }).catch(error => {
-            console.log(error);
-        })        
-    }
+    useEffect(() => {    
+        const getTransactions = async() => {
+            await axios.get(URL_TRANSACTION + `/all/last/${user.id}`)
+            .then(response => {
+                setData(response.data);             
+            }).catch(error => {
+                console.log(error);
+            })        
+        }    
 
-    const getSumIncome = async() => {
-        await axios.get(URL_TRANSACTION + `/income/sum/${user.id}`)
-        .then(response => {            
-            response.data[0].total_amount ? setIncome(response.data[0].total_amount) : setIncome(0);
-        }).catch(error => {                 
-            console.log(error);
-        })        
-    }
-
-    const getSumExpenses = async() => {
-        await axios.get(URL_TRANSACTION + `/expenses/sum/${user.id}`)
-        .then(response => {
-            response.data[0].total_amount ? setExpenses(response.data[0].total_amount) : setExpenses(0);
-        }).catch(error => {            
-            console.log(error);
-        })        
-    }
-
-    useEffect(() => {        
+        const getSumIncome = async() => {
+            await axios.get(URL_TRANSACTION + `/income/sum/${user.id}`)
+            .then(response => {            
+                response.data[0].total_amount ? setIncome(response.data[0].total_amount) : setIncome(0);
+            }).catch(error => {                 
+                console.log(error);
+            })        
+        }
+    
+        const getSumExpenses = async() => {
+            await axios.get(URL_TRANSACTION + `/expenses/sum/${user.id}`)
+            .then(response => {
+                response.data[0].total_amount ? setExpenses(response.data[0].total_amount) : setExpenses(0);
+            }).catch(error => {            
+                console.log(error);
+            })        
+        }
+        
         getTransactions(); 
         getSumIncome();
         getSumExpenses();              
-    }, [])    
+    }, [user.id])    
 
     return(
         <Fragment>

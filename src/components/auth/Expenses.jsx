@@ -46,7 +46,7 @@ function Expenses(){
         amount: null,
         date: null,
         userId: user.id,
-        typeId: 2
+        typeId: 34
     });            
 
     const [errorConcept, setErrorConcept] = useState();
@@ -100,7 +100,7 @@ function Expenses(){
                 amount: null,
                 date: null,
                 userId: user.id,
-                typeId: 2
+                typeId: 34
             })        
             getTransactionsExpenses();            
             clearTransaction();

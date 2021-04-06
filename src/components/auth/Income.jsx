@@ -39,14 +39,14 @@ const columns = [
 function Income(){
     const [data, setData] = useState([]);   
     
-    const { user } = useAuth();
+    const { user } = useAuth();    
     
     const [transaction, setTransaction] = useState({
         concept: null,
         amount: null,
         date: null,
         userId: user.id,
-        typeId: 1
+        typeId: 24
     });        
 
     const [errorConcept, setErrorConcept] = useState();
@@ -60,7 +60,7 @@ function Income(){
         }).catch(error => {
             console.log(error);
         })
-    }
+    }    
 
     const deleteIncome = async(income) => {
         axios.delete(URL_TRANSACTION + `/delete/${income.id}`)
@@ -100,7 +100,7 @@ function Income(){
                 amount: null,
                 date: null,
                 userId: user.id,
-                typeId: 1
+                typeId: 24
             })        
             getTransactionsIncome();            
             clearTransaction();
@@ -151,13 +151,13 @@ function Income(){
     useEffect(() => {
         const getTransactionsIncome = async() => {
             await axios.get(URL_TRANSACTION + `/income/${user.id}`)
-            .then(response => {
+            .then(response => {                
                 setData(response.data);            
             }).catch(error => {
                 console.log(error);
             })
         }
-
+                
         getTransactionsIncome();
     }, [user.id]);
 
